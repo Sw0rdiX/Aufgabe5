@@ -1,0 +1,5 @@
+{
+  "type": "error",
+  "statusCode": 404,
+  "msg": "Route nicht gefunden, Element nicht gefunden"
+}

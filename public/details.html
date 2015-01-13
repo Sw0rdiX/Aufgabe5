@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Details for Stream</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <style>
+    * {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    h1.center, h2.center, p.center {
+      text-align: center;
+    }
+
+    label {
+      width: 150px;
+      display: inline-block;
+      padding: 5px;
+      margin: 10px;
+    }
+
+    input, button {
+      width: 200px;
+      display: inline-block;
+      padding: 5px;
+      margin: 5px;
+    }
+
+    input:read-only {
+      border: none;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<section>
+  <h3>Details for Stream "<span id="streamNameTitle"></span>" with ID "<span id="streamIdTitle"></span>"</h3>
+  <h5>GET /api/v1/streams/<span id="streamIdApi"></span></h5>
+  <h5>PUT /api/v1/streams/<span id="streamIdApi1"></span></h5>
+  <h5>DELETE /api/v1/streams/<span id="streamIdApi2"></span></h5>
+
+  <label for="streamId">ID</label>
+  <input id="streamId" type="text" readonly placeholder="No Content">
+  <br>
+  <label for="streamName">Name</label>
+  <input id="streamName" type="text" readonly placeholder="No Content">
+  <br>
+  <label for="streamDescription">Description</label>
+  <input id="streamDescription" type="text" readonly placeholder="No Content">
+  <br>
+  <label for="streamUrl">Url</label>
+  <input id="streamUrl" type="text" readonly placeholder="No Content">
+  <br>
+  <label for="streamState">State</label>
+  <input id="streamState" type="text" readonly placeholder="No Content">
+  <br>
+  <br>
+  <button id="streamEdit" type="button" value="edit">Edit-Modus</button>
+  <button id="streamPut" type="button" value="put">Updaten!</button>
+  <br>
+  <button id="streamDelete" type="button" value="edit">Delete-Modus</button>
+  <button id="streamDeleteAccept" type="button" value="edit">Löschen!</button>
+
+
+</section>
+<br>
+<br>
+<a href="index.html">Zurück zur Übersicht</a>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+  var streamId = window.location.search;
+  streamId = streamId.substring(1);
+  console.log(streamId);
+
+  jQuery('#streamPut').hide();
+  jQuery('#streamDeleteAccept').hide();
+
+  jQuery.get('/api/v1/streams/' + streamId, function (data, textStatus, jqXHR) {
+    console.log("Get resposne:");
+    console.dir(data);
+    console.log(textStatus);
+    console.dir(jqXHR);
+    jQuery('#streamIdTitle').html(data._id || 'No Content');
+    jQuery('#streamIdApi').html(data._id || 'No Content');
+    jQuery('#streamIdApi1').html(data._id || 'No Content');
+    jQuery('#streamIdApi2').html(data._id || 'No Content');
+    jQuery('#streamNameTitle').html(data.name || 'No Content');
+
+    jQuery('#streamId').val(data._id);
+    jQuery('#streamName').val(data.name);
+    jQuery('#streamDescription').val(data.description);
+    jQuery('#streamUrl').val(data.url);
+    jQuery('#streamState').val(data.state);
+
+  });
+
+  jQuery('#streamEdit').on('click', function (e) {
+    jQuery('input').prop({readonly: false});
+    jQuery('#streamId').prop({disabled:true});
+    jQuery('#streamPut').fadeIn();
+
+    jQuery('#streamPut').on('click', function (e) {
+      e.preventDefault();
+      console.log("POST new Stream...");
+      var name = jQuery('#streamName').val();
+      var desc = jQuery('#streamDescription').val();
+      var url = jQuery('#streamUrl').val();
+      var state = jQuery('#streamState').val();
+      console.log(name, desc, url, state);
+
+      jQuery.ajax({
+        url: "/api/v1/streams/" + streamId,
+        type: "PUT",
+        data: {
+          "name": name,
+          "description": desc,
+          "url": url,
+          "state": state
+        },
+        success: function (data, textStatus, jqXHR) {
+          console.log("Post resposne:");
+          console.dir(data);
+          console.log(textStatus);
+          console.dir(jqXHR);
+        }
+      });
+
+      window.location.reload();
+    })
+
+  })
+  jQuery('#streamDelete').on('click', function (e) {
+    jQuery('#streamDeleteAccept').fadeIn();
+
+    jQuery('#streamDeleteAccept').on('click', function (e) {
+      e.preventDefault();
+      console.log("POST new Stream...");
+      var name = jQuery('#streamName').val();
+      var desc = jQuery('#streamDescription').val();
+      var url = jQuery('#streamUrl').val();
+      var state = jQuery('#streamState').val();
+      console.log(name, desc, url, state);
+
+      jQuery.ajax({
+        url: "/api/v1/streams/" + streamId,
+        type: "DELETE",
+        success: function (data, textStatus, jqXHR) {
+          console.log("Post resposne:");
+          console.dir(data);
+          console.log(textStatus);
+          console.dir(jqXHR);
+        }
+      });
+
+      window.location.assign("./index.html")
+    })
+
+  })
+</script>
+</body>
+</html>

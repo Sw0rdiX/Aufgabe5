@@ -1,0 +1,5 @@
+{
+  "type": "error",
+  "statusCode": 400,
+  "msg": "Unzureichende Anfrage (z.B. Parameter fehlen)"
+}
