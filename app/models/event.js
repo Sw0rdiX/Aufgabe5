@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var Stream = require('./stream');
 
 var EventSchema = new Schema({
     name: {type: String, required: true},

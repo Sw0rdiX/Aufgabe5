@@ -28,6 +28,7 @@ mongoose.connect('mongodb://localhost:27017');
 
 // set schema
 var Stream = require('./app/models/stream');
+var Event = require('./app/models/event');
 
 // ERROR JSON
 var err_400 = "./app/errors/400.json";
@@ -75,16 +76,17 @@ router.route('/streams')
     })
     .get(function (req, res) {
         console.log(req.query);
-        Stream.find(req.query ,function (err, streams) {
-            if (err) {
-                res.sendfile(err_404);
-            }
-            else {
-                console.log('GET Streams Size :', streams.length);
-                res.status(200).json(streams);
-            }
+        Stream
+            .find(req.query, function (err, streams) {
+                if (err) {
+                    res.sendfile(err_404);
+                }
+                else {
+                    console.log('GET Streams Size :', streams.length);
+                    res.status(200).json(streams);
+                }
 
-        });
+            });
     })
 ;
 
@@ -92,57 +94,99 @@ router.route('/streams/:stream_id')
 
     // GET
     .get(function (req, res) {
-        Stream.findById(req.params.stream_id, function (err, stream) {
-            if (err) {
-                res.sendfile(err_404);
-            }
-            else {
-                res.status(200).json(stream);
-            }
-        });
+        Stream
+            .findById(req.params.stream_id, function (err, stream) {
+                if (err) {
+                    res.sendfile(err_404);
+                }
+                else {
+                    res.status(200).json(stream);
+                }
+            });
     })
     // PUT
     .put(function (req, res) {
 
         // use our bear model to find the bear we want
-        Stream.findById(req.params.stream_id, function (err, stream) {
+        Stream
+            .findById(req.params.stream_id, function (err, stream) {
 
-            if (err) {
-                res.send(err);
-            }
-            else {
-                stream.name = req.body.name;
-                stream.description = req.body.description;
-                stream.url = req.body.url;
-                stream.state = req.body.state || 0;
+                if (err) {
+                    res.send(err);
+                }
+                else {
+                    stream.name = req.body.name;
+                    stream.description = req.body.description;
+                    stream.url = req.body.url;
+                    stream.state = req.body.state || 0;
 
-                // save the stream
-                stream.save(function (err) {
-                    if (err) {
-                        res.sendfile(err_400);
-                    }
-                    else {
-                        console.log('PUT Stream :', stream);
-                        res.status(200).json(stream);
-                    }
-                });
-            }
-        });
+                    // save the stream
+                    stream.save(function (err) {
+                        if (err) {
+                            res.sendfile(err_400);
+                        }
+                        else {
+                            console.log('PUT Stream :', stream);
+                            res.status(200).json(stream);
+                        }
+                    });
+                }
+            });
     })
 
     // DELETE
     .delete(function (req, res) {
-        Stream.remove({
-            _id: req.params.stream_id
-        }, function (err, stream) {
+        Stream
+            .remove({
+                _id: req.params.stream_id
+            }, function (err, stream) {
+                if (err) {
+                    res.sendfile(err_400);
+                }
+                else {
+                    console.log('DELETE Stream :', stream);
+                    res.status(204).end();
+                }
+            });
+    })
+;
+
+router.route('/events')
+
+    // create a stream (accessed at POST http://localhost:8080/api/v1/streams)
+    .post(function (req, res) {
+
+        var event = new Event();      // create a new instance of the Stream model
+        console.log('Request Body :', req.body);
+        event.name = req.body.name;
+        event.streams = req.body.streams;
+
+        // save the stream and check for errors
+        event.save(function (err) {
             if (err) {
                 res.sendfile(err_400);
             }
             else {
-                console.log('DELETE Stream :', stream);
-                res.status(204).end();
+                console.log('POST New Stream :', event);
+                res.status(201).json(event);
             }
         });
+
+    })
+    .get(function (req, res) {
+        console.log(req.query);
+        Event
+            .find()
+            .populate('streams')
+            .exec(function (err, events) {
+                if (err) {
+                    res.sendfile(err_404);
+                }
+                else {
+                    console.log('GET Events Size :', events.length);
+                    res.status(200).json(events);
+                }
+            });
     })
 ;
 
