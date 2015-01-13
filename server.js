@@ -23,7 +23,7 @@ var port = process.env.PORT || 1337;
 // set MongoDB via mongoose
 var mongoose = require('mongoose');
 
-// connect to our database
+// connect to database
 mongoose.connect('mongodb://localhost:27017');
 
 // set schema
@@ -46,7 +46,7 @@ router.use(function (req, res, next) {
 });
 
 router.get('/', function (req, res) {
-    res.json({message: 'hooray! welcome to my api!'});
+    res.sendfile("./package.json");
 });
 
 router.route('/streams')
