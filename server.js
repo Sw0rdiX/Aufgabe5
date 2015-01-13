@@ -176,7 +176,7 @@ router.route('/events')
     .get(function (req, res) {
         console.log(req.query);
         Event
-            .find()
+            .find(req.query)
             .populate('streams')
             .exec(function (err, events) {
                 if (err) {
