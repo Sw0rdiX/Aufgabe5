@@ -190,6 +190,67 @@ router.route('/events')
     })
 ;
 
+router.route('/events/:event_id')
+
+    // GET
+    .get(function (req, res) {
+
+        Event
+            .findById(req.params.event_id)
+            .populate('streams')
+            .exec( function (err, event) {
+                if (err) {
+                    res.sendfile(err_404);
+                }
+                else {
+                    res.status(200).json(event);
+                }
+            });
+    })
+    // PUT
+    .put(function (req, res) {
+        
+        Event
+            .findById(req.params.event_id, function (err, event) {
+
+                if (err) {
+                    res.sendfile(err_404);
+                }
+                else {
+                    event.name = req.body.name;
+                    event.streams = req.body.streams;
+
+                    // save the stream
+                    event.save(function (err) {
+                        if (err) {
+                            res.sendfile(err_400);
+                        }
+                        else {
+                            console.log('PUT Stream :', event);
+                            res.status(200).json(event);
+                        }
+                    });
+                }
+            });
+    })
+
+    // DELETE
+    .delete(function (req, res) {
+        Stream
+            .remove({
+                _id: req.params.event_id
+            }, function (err, event) {
+                if (err) {
+                    res.sendfile(err_400);
+                }
+                else {
+                    console.log('DELETE Event :', event);
+                    res.status(204).end();
+                }
+            });
+    })
+;
+
 
 // REGISTER ROUTES
 app.use('/api/v1', router);
