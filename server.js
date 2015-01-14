@@ -41,7 +41,7 @@ var router = express.Router();
 
 // middleware to use for all requests
 router.use(function (req, res, next) {
-    console.log(req.ip, req.hostname);
+    //console.log(req.ip, req.hostname);
     console.log(req.method, req.originalUrl);
     next();
 });
@@ -58,14 +58,14 @@ router.route('/streams')
         var stream = new Stream();      // create a new instance of the Stream model
         console.log('Request Body :', req.body);
         stream.name = req.body.name;
-        stream.description = req.body.description;
+        stream.description = req.body.description || '';
         stream.url = req.body.url;
         stream.state = req.body.state || 0;
 
         // save the stream and check for errors
         stream.save(function (err) {
             if (err) {
-                res.sendfile(err_400);
+                res.status(400).sendfile(err_400);
             }
             else {
                 console.log('POST New Stream :', stream);
@@ -76,10 +76,16 @@ router.route('/streams')
     })
     .get(function (req, res) {
         console.log(req.query);
+        var querySearch = {};
+
+        for (key in req.query) {
+            querySearch[key] = new RegExp(req.query[key], 'gi');
+        }
+        console.log(querySearch);
         Stream
-            .find(req.query, function (err, streams) {
+            .find(querySearch, function (err, streams) {
                 if (err) {
-                    res.sendfile(err_404);
+                    res.status(404).sendfile(err_404);
                 }
                 else {
                     console.log('GET Streams Size :', streams.length);
@@ -97,7 +103,7 @@ router.route('/streams/:stream_id')
         Stream
             .findById(req.params.stream_id, function (err, stream) {
                 if (err) {
-                    res.sendfile(err_404);
+                    res.status(404).sendfile(err_404);
                 }
                 else {
                     res.status(200).json(stream);
@@ -115,15 +121,18 @@ router.route('/streams/:stream_id')
                     res.send(err);
                 }
                 else {
-                    stream.name = req.body.name;
-                    stream.description = req.body.description;
-                    stream.url = req.body.url;
-                    stream.state = req.body.state || 0;
+                    for (prop in req.body) {
+                        stream[prop] = req.body[prop];
+                    }
+                    //stream.name = req.body.name;
+                    //stream.description = req.body.description;
+                    //stream.url = req.body.url;
+                    //stream.state = req.body.state || 0;
 
                     // save the stream
                     stream.save(function (err) {
                         if (err) {
-                            res.sendfile(err_400);
+                            res.status(404).sendfile(err_400);
                         }
                         else {
                             console.log('PUT Stream :', stream);
@@ -141,7 +150,7 @@ router.route('/streams/:stream_id')
                 _id: req.params.stream_id
             }, function (err, stream) {
                 if (err) {
-                    res.sendfile(err_400);
+                    res.status(400).sendfile(err_400);
                 }
                 else {
                     console.log('DELETE Stream :', stream);
@@ -164,7 +173,7 @@ router.route('/events')
         // save the stream and check for errors
         event.save(function (err) {
             if (err) {
-                res.sendfile(err_400);
+                res.status(400).sendfile(err_400);
             }
             else {
                 console.log('POST New Stream :', event);
@@ -180,7 +189,7 @@ router.route('/events')
             .populate('streams')
             .exec(function (err, events) {
                 if (err) {
-                    res.sendfile(err_404);
+                    res.status(404).sendfile(err_404);
                 }
                 else {
                     console.log('GET Events Size :', events.length);
@@ -198,9 +207,9 @@ router.route('/events/:event_id')
         Event
             .findById(req.params.event_id)
             .populate('streams')
-            .exec( function (err, event) {
+            .exec(function (err, event) {
                 if (err) {
-                    res.sendfile(err_404);
+                    res.status(404).sendfile(err_404);
                 }
                 else {
                     res.status(200).json(event);
@@ -209,12 +218,12 @@ router.route('/events/:event_id')
     })
     // PUT
     .put(function (req, res) {
-        
+
         Event
             .findById(req.params.event_id, function (err, event) {
 
                 if (err) {
-                    res.sendfile(err_404);
+                    res.status(404).sendfile(err_404);
                 }
                 else {
                     event.name = req.body.name;
@@ -223,7 +232,7 @@ router.route('/events/:event_id')
                     // save the stream
                     event.save(function (err) {
                         if (err) {
-                            res.sendfile(err_400);
+                            res.status(400).sendfile(err_400);
                         }
                         else {
                             console.log('PUT Stream :', event);
@@ -236,12 +245,12 @@ router.route('/events/:event_id')
 
     // DELETE
     .delete(function (req, res) {
-        Stream
+        Event
             .remove({
                 _id: req.params.event_id
             }, function (err, event) {
                 if (err) {
-                    res.sendfile(err_400);
+                    res.status(400).sendfile(err_400);
                 }
                 else {
                     console.log('DELETE Event :', event);

@@ -31,6 +31,14 @@
       border: none;
     }
 
+    a {
+      color: black;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: red;
+    }
     .bold {
       font-weight: bold;
     }
@@ -69,7 +77,7 @@
 </section>
 <br>
 <br>
-<a href="index.html">Zurück zur Übersicht</a>
+<a href="index.html#Streams/GET">◄ Zurück zur Übersicht</a>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script>
   var streamId = window.location.search;
@@ -156,7 +164,7 @@
         }
       });
 
-      window.location.assign("./index.html")
+      window.location.assign("./index.html#Streams/GET")
     })
 
   })

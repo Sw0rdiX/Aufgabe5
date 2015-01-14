@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>Details for Event</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <style>
+    * {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    h1.center, h2.center, p.center {
+      text-align: center;
+    }
+
+    label {
+      width: 150px;
+      display: inline-block;
+      padding: 5px;
+      margin: 5px;
+      vertical-align: top;
+    }
+
+    input, button {
+      width: 200px;
+      display: inline-block;
+      padding: 5px;
+      margin: 5px;
+    }
+
+    input:read-only, textarea:read-only {
+      border: none;
+    }
+
+    a {
+      color: black;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: red;
+    }
+
+    .bold {
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 200px;
+      min-height: 300px;
+      padding: 5px;
+      margin: 5px;
+    }
+
+    .inline-block {
+      display: inline-block;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    #streamDetails {
+      vertical-align: top;
+    }
+
+    #streamDetails ul {
+      font-size: 12px;
+      margin: 5px;
+      padding: 5px;
+    }
+
+    #streamDetails ul li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+<section>
+  <h3>Details for Event "<span id="eventNameTitle"></span>" with ID "<span id="eventIdTitle"></span>"</h3>
+  <h5>GET /api/v1/events/<span id="eventIdApi"></span></h5>
+  <h5>PUT /api/v1/events/<span id="eventIdApi1"></span></h5>
+  <h5>DELETE /api/v1/events/<span id="eventIdApi2"></span></h5>
+
+  <label for="eventId">ID</label>
+  <input id="eventId" type="text" readonly placeholder="No Content">
+  <br>
+  <label for="eventName">Name</label>
+  <input id="eventName" type="text" readonly placeholder="No Content">
+  <br>
+
+  <div class="inline-block">
+    <label for="eventStreams">Streams</label>
+    <textarea id="eventStreams" readonly placeholder="No Content"></textarea>
+  </div>
+  <div class="inline-block" id="streamDetails">
+    <ul>
+      <li><a href="#">no content</a></li>
+      <li><a href="#">no content</a></li>
+    </ul>
+  </div>
+  <br>
+  <button id="eventEdit" type="button" value="edit">Edit-Modus</button>
+  <button id="eventPut" type="button" value="put">Updaten!</button>
+  <br>
+  <button id="eventDelete" type="button" value="edit">Delete-Modus</button>
+  <button id="eventDeleteAccept" type="button" value="edit">Löschen!</button>
+
+
+</section>
+<br>
+<br>
+<a href="index.html#Events/GET">◄ Zurück zur Übersicht</a>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+  var eventId = window.location.search;
+  eventId = eventId.substring(1);
+  console.log(eventId);
+
+  jQuery('#eventPut').hide();
+  jQuery('#eventDeleteAccept').hide();
+
+  jQuery.get('/api/v1/events/' + eventId, function (data, textStatus, jqXHR) {
+    console.log("Get resposne:");
+    console.dir(data);
+    console.log(textStatus);
+    console.dir(jqXHR);
+    jQuery('#eventIdTitle').html(data._id || 'No Content');
+    jQuery('#eventIdApi').html(data._id || 'No Content');
+    jQuery('#eventIdApi1').html(data._id || 'No Content');
+    jQuery('#eventIdApi2').html(data._id || 'No Content');
+    jQuery('#eventNameTitle').html(data.name || 'No Content');
+
+    jQuery('#eventId').val(data._id);
+    jQuery('#eventName').val(data.name);
+    var streamIds = "";
+    jQuery.each(data.streams, function (index, value) {
+      streamIds += value._id + " ";
+    });
+    jQuery('#eventStreams').val(streamIds);
+
+    var streamDetails = jQuery('#streamDetails');
+    var streamDetailsList = jQuery('ul', streamDetails);
+    streamDetailsList.empty();
+
+    jQuery.each(data.streams, function (index, value) {
+      streamDetailsList.append('<li><a href="details.html?' + value._id + '"><span> ' + value.name + '</span> (<span>' + value._id + '</span>)</a> <a class="deleteStream" href="#' + index + '">delete</a> </li>');
+    });
+
+    var streamOptions = "";
+    jQuery.get("/api/v1/streams", function (data, textStatus, jqXHR) {
+      jQuery.each(data, function (index, value) {
+        console.log(index, value);
+        console.log(data[index].name);
+//        streamList.append('<li><a href="details.html?' + data[index]._id + '"><span> ' + data[index].name + '</span> (<span>' + data[index]._id + '</span>)</a></li>');
+        streamOptions += '<option value="' + data[index]._id + '">' + data[index].name + '</option>'
+      })
+
+      streamDetailsList.append('<li><button id="addStream">Add Stream</button> : <select id="streamSelect">' + streamOptions + '</select></li>');
+      jQuery('#addStream').on('click', function (e) {
+        var streamSelect = jQuery('#streamSelect').val();
+        jQuery('#eventStreams').val(jQuery('#eventStreams').val() + streamSelect);
+        jQuery('#eventEdit').trigger('click');
+        jQuery('#eventPut').trigger('click');
+      });
+      jQuery('a.deleteStream').on('click', function (e) {
+        console.log("delete...",this);
+      });
+    });
+
+
+  });
+
+  jQuery('#eventEdit').on('click', function (e) {
+    jQuery('input,textarea').prop({readonly: false});
+    jQuery('#eventId').prop({disabled: true});
+    jQuery('#eventPut').fadeIn();
+
+    jQuery('#eventPut').on('click eventPut', function (e) {
+      e.preventDefault();
+      console.log("PUT Event...");
+      var name = jQuery('#eventName').val();
+      var streams = jQuery('#eventStreams').val().trim().split(" ");
+      console.log(streams);
+
+      jQuery.ajax({
+        url: "/api/v1/events/" + eventId,
+        type: "PUT",
+        data: {
+          "name": name,
+          "streams": streams
+        },
+        success: function (data, textStatus, jqXHR) {
+          console.log("Post resposne:");
+          console.dir(data);
+          console.log(textStatus);
+          console.dir(jqXHR);
+        }
+      });
+
+      window.location.reload();
+    })
+
+  });
+  jQuery('#eventDelete').on('click', function (e) {
+    jQuery('#eventDeleteAccept').fadeIn();
+
+    jQuery('#eventDeleteAccept').on('click', function (e) {
+      e.preventDefault();
+      console.log("Delete Event...");
+
+      jQuery.ajax({
+        url: "/api/v1/events/" + eventId,
+        type: "DELETE",
+        success: function (data, textStatus, jqXHR) {
+          console.log("Delete resposne:");
+          console.dir(data);
+//          console.log(textStatus);
+//          console.dir(jqXHR);
+        }
+      });
+
+      window.location.assign("./index.html#Events/GET")
+    })
+
+  })
+</script>
+</body>
+</html>

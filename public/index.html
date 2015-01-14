@@ -17,7 +17,8 @@
       width: 150px;
       display: inline-block;
       padding: 5px;
-      margin: 10px;
+      margin: 5px;
+      vertical-align: top;
     }
 
     input, button {
@@ -74,6 +75,13 @@
       top: 3vh;
       background-color: aliceblue;
       z-index: 9999;
+    }
+
+    textarea {
+      width: 200px;
+      min-height: 300px;
+      padding: 5px;
+      margin: 5px;
     }
 
   </style>
@@ -192,7 +200,7 @@
     <input id="eventName" type="text" placeholder="Name is required" required="required">
     <br>
     <label for="eventStreams">Streams</label>
-    <input id="eventStreams" type="text" placeholder="Streams is optional">
+    <textarea id="eventStreams" placeholder="Streams is optional"></textarea>
     <br>
     <br>
     <input type="reset" value="Zurücksetzen">
@@ -292,16 +300,17 @@
     jQuery.each(data, function (index, value) {
       console.log(index, value);
       console.log(data[index].name);
-      eventList.append('<li><a href="details.html?' + data[index]._id + '"><span> ' + data[index].name + '</span> (<span>' + data[index]._id + '</span>)</a></li>');
+      eventList.append('<li><a href="details_events.html?' + data[index]._id + '"><span> ' + data[index].name + '</span> (<span>' + data[index]._id + '</span>)</a></li>');
     })
   });
 
   jQuery('#postEvent').on('submit', function (e) {
+    console.log("HALLLLLLLLLOOOOO");
     e.preventDefault();
     console.log("POST new Event...");
     var name = jQuery('#eventName').val();
-    var streams = jQuery('#eventStreams').val();
-    console.log(name, streams);
+    var streams = jQuery('#eventStreams').val().trim().split(" ");
+    console.log("STREAMS",streams);
 
     jQuery.post("/api/v1/events", {
       "name": name,
@@ -312,6 +321,27 @@
       console.log(textStatus);
       console.dir(jqXHR);
       window.location.reload();
+    });
+  });
+
+  jQuery('#searchEventQuery').on('click', function (e) {
+
+    var query = jQuery('#eventQuery').val();
+    console.log(query);
+    jQuery.get("/api/v1/events?" + query, function (data, textStatus, jqXHR) {
+      console.log("Get response:");
+      console.dir(data);
+      console.log(textStatus);
+      console.dir(jqXHR);
+      jQuery('#eventSize').html(data.length);
+      var eventList = jQuery('#eventList');
+      eventList.empty();
+      eventList.append('<li><span> NAME </span> (<span> ID </span>)</a></li></li>');
+      jQuery.each(data, function (index, value) {
+        console.log(index, value);
+        console.log(data[index].name);
+        eventList.append('<li><a href="details_events.html?' + data[index]._id + '"><span> ' + data[index].name + '</span> (<span>' + data[index]._id + '</span>)</a></li>');
+      })
     });
   });
 </script>
