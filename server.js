@@ -226,8 +226,11 @@ router.route('/events/:event_id')
                     res.status(404).sendfile(err_404);
                 }
                 else {
-                    event.name = req.body.name;
-                    event.streams = req.body.streams;
+                    for (prop in req.body) {
+                        event[prop] = req.body[prop];
+                    }
+                    //event.name = req.body.name;
+                    //event.streams = req.body.streams;
 
                     // save the stream
                     event.save(function (err) {
